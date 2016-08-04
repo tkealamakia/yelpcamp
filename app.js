@@ -5,26 +5,10 @@ var mongoose = require("mongoose");
 var Campground = require("./models/campground");
 var seedDB = require("./seeds");
 
-seedDB();
 mongoose.connect("mongodb://localhost/yelp_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-//Schema setup
-
-// Campground.create(
-//   {
-//     name: "Salmon Creek",
-//     image: "https://farm4.staticflickr.com/3872/14435096036_39db8f04bc.jpg",
-//     description: "This is awesome"
-//   }, function (err, campground) {
-//     if(err) {
-//       console.log(err);
-//     } else {
-//       console.log("Newly create campground:");
-//       console.log(campground);
-//     }
-//   });
+seedDB();
 
 
 app.get("/", function(req, res) {
@@ -36,7 +20,7 @@ app.get("/campgrounds", function(req, res) {
     if (err) {
       consol.log(err);
     } else {
-      res.render("index", {campgrounds: allCampgrounds});
+      res.render("campgrounds/index", {campgrounds: allCampgrounds});
     }
   })
 });
@@ -56,17 +40,28 @@ app.post("/campgrounds", function(req, res) {
 });
 
 app.get("/campgrounds/new", function(req, res) {
-  res.render("new.ejs");
+  res.render("campgrounds/new");
 });
 
 app.get("/campgrounds/:id", function(req, res) {
-  Campground.findById(req.params.id, function(err, foundCampground) {
+  Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground) {
     if (err) {
       console.log(err);
     } else {
-      res.render("show", {campground: foundCampground});
+      console.log(foundCampground);
+      res.render("campgrounds/show", {campground: foundCampground});
     }
   });
+});
+
+app.get("/campgrounds/:id/comments/new", function(req, res) {
+  Campground.findById(req.params.id, function(err, campground) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render("comments/new", {campground: campground});
+    }
+  })
 });
 
 app.listen(3000, function() {
